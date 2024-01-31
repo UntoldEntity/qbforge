@@ -1,0 +1,66 @@
+body {
+    background-color: #000000;
+}
+
+.rs {
+    background-color: white;
+}
+
+p, h1, h2, h3, h4 {
+    color: white;
+}
+h4{
+    font-size: 15px;
+}
+
+.settings, .results {
+    width: 20%; /* Width of the outside container */
+    background-color: #111111;
+    padding: 10px;
+    border-radius: 10px;
+    float:left;
+}
+
+.results {
+    margin-left:2%;
+    width:70%;
+}
+
+/* The slider itself */
+.slider {
+    -webkit-appearance: none;  /* Override default CSS styles */
+    appearance: none;
+    width: 100%; /* Full-width */
+    height: 5px; /* Specified height */
+    background: #d3d3d3; /* Grey background */
+    outline: none; /* Remove outline */
+    opacity: 0.7; /* Set transparency (for mouse-over effects on hover) */
+    -webkit-transition: .2s; /* 0.2 seconds transition on hover */
+    transition: opacity .2s;
+    border-radius: 10px;
+}
+
+.slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 15px;
+    height: 15px;
+    border-radius: 5px;
+    background: #04AA6D;
+    cursor: pointer;
+}
+
+.slider_round {
+    color: #fff0f0;
+
+}
+
+.generate {
+    height: 30px;
+    width: 120px;
+    background-color: #000000;
+    color: white;
+    outline: #04AA6D;
+    outline-width: 1px;
+    outline-style: solid;
+}
