@@ -1,4 +1,5 @@
 
+
 $(document).ready(function () {
 let categories =   {"Literature":["American Literature", "British Literature", "Classical Literature", "European Literature", "World Literature", "Other Literature"],
                     "History":["American History", "Ancient History", "European History", "World History", "Other History"],
@@ -11,6 +12,7 @@ const checkboxes = document.getElementById("sc");
 const apiUrl = new URL("https://qbreader.org/api/query");
 const question_count_slider = document.getElementById("question_count");
 const question_count_label = document.getElementById("qc");
+const loop_lim = 10;
 
 var  question_count = 24
 
@@ -69,25 +71,26 @@ question_count_slider.oninput = function() {
 }
 
 litSlider.oninput = function() {
-    lit = parseInt(this.value);
+    lit = parseFloat(this.value);
     updatesliders()
 }
 histSlider.oninput = function() {
-    hist = parseInt(this.value);
+    hist = parseFloat(this.value);
     updatesliders()
 }
 sciSlider.oninput = function() {
-    sci = parseInt(this.value);
+    sci = parseFloat(this.value);
     updatesliders()
 }
 faSlider.oninput = function() {
-    fa = parseInt(this.value);
+    fa = parseFloat(this.value);
     updatesliders()
 }
 
 generate_button.pressed
 
 generate()
+
 function decimalsToPercentage(decimals) {
     // Calculate the sum of decimals
     const sum = decimals.reduce((acc, val) => acc + val, 0);
@@ -109,34 +112,39 @@ function decimalsToPercentage(decimals) {
     return percentages;
 }
 function questionsToLimit(counts) {
-    // Calculate the sum of decimals
-    const sum = counts.reduce((acc, val) => acc + val, 0);
 
     // Calculate the sum of percentages
-    const totalCount = counts.reduce((acc, val) => acc + val, 0);
+    var totalCount = counts.reduce((acc, val) => acc + val, 0);
 
     // Adjust one of the percentages if necessary
     if (totalCount !== question_count) {
-        const difference = question_count - totalCount;
-        // Find the index of the maximum or minimum value to adjust
-        const indexToAdjust = difference > 0 ? counts.indexOf(Math.max(...counts)) : counts.indexOf(Math.min(...counts));
+        var difference = question_count - totalCount;
+        console.log(difference, "dif")
 
-        // Ensure adjustment won't make the count negative
-        if (counts[indexToAdjust] + difference >= 0) {
-            counts[indexToAdjust] += difference;
-        } else {
-            // If adjusting would make it negative, set it to 0 and distribute the difference among the others
-            counts[indexToAdjust] = 0;
-            const remainingIndices = counts.filter((_, index) => index !== indexToAdjust);
-            const remainingCount = remainingIndices.length;
-            const adjustedDifference = Math.floor(difference / remainingCount);
-            remainingIndices.forEach(index => {
-                counts[index] += adjustedDifference;
-            });
-            const remainder = difference % remainingCount;
-            for (let i = 0; i < remainder; i++) {
-                counts[remainingIndices[i]]++;
+        i = 0;
+        j = 0;
+        while (difference != 0) {
+            j++
+            counts[i] += (difference/Math.abs(difference))
+            
+
+            if (i >= counts.length ) { i = 0 }
+
+            totalCount=0
+            for (val of counts) {
+                totalCount += val
+                
             }
+            difference = question_count - totalCount;
+
+            console.log(difference/Math.abs(difference), question_count, totalCount, difference)
+            console.log(counts)
+
+            if (j > loop_lim || difference == 0){
+                break;
+            }
+
+            i++
         }
     }
 
@@ -153,16 +161,15 @@ function updatesliders() {
 
     let litq = Math.round(question_count*(lit/total)); let histq = Math.round(question_count*(hist/total)); let sciq = Math.round(question_count*(sci/total)); let faq = Math.round(question_count*(fa/total))
     question_counts = questionsToLimit([litq,histq,sciq,faq])
+    console.log(question_counts, "TTTTTTTTTTTTTT")
     lit_count = question_counts[0], hist_count=question_counts[1], sci_count=question_counts[2],fa_count = question_counts[3]
-
-
 
     console.log(perc_lit,perc_hist,perc_sci,perc_fa,perc_lit+perc_hist+perc_sci+perc_fa, "        ", litq, histq, sciq, faq, litq+histq+sciq+faq)
 
-    litLabel.innerHTML = `Literature - ${perc_lit}% - ${litq} Questions`
-    histLabel.innerHTML = `History - ${perc_hist}% - ${histq} Questions`
-    sciLabel.innerHTML = `Science - ${perc_sci}% - ${sciq} Questions`
-    faLabel.innerHTML = `Fine Arts - ${perc_fa}% - ${faq} Questions`
+    litLabel.innerHTML = `Literature - ${perc_lit}% - ${lit_count} Questions`
+    histLabel.innerHTML = `History - ${perc_hist}% - ${hist_count} Questions`
+    sciLabel.innerHTML = `Science - ${perc_sci}% - ${sci_count} Questions`
+    faLabel.innerHTML = `Fine Arts - ${perc_fa}% - ${fa_count} Questions`
 }
 
 function addCheckbox(name, i, container, pre_checked = true) {  
