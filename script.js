@@ -12,14 +12,16 @@ const checkboxes = document.getElementById("sc");
 const apiUrl = new URL("https://qbreader.org/api/query");
 const question_count_slider = document.getElementById("question_count");
 const question_count_label = document.getElementById("qc");
+const results_window = document.getElementById("results_window")
 const loop_lim = 10;
 
 var  question_count = 24
 
-let lit_count = 6
-let hist_count = 6
-let sci_count = 6
-let fa_count = 6
+let lit_count = 5
+let hist_count = 5
+let sci_count = 5
+let fa_count = 5
+let oth_count = 4
 
 var generate_button = document.getElementById("generate")
 
@@ -27,11 +29,13 @@ var litSlider = document.getElementById("Literature");
 var histSlider = document.getElementById("History");
 var sciSlider = document.getElementById("Science");
 var faSlider = document.getElementById("Fine Arts");
+var othSlider = document.getElementById("Other");
 
 var litLabel = document.getElementById("lLit");
 var histLabel = document.getElementById("lHist");
 var sciLabel = document.getElementById("lSci");
 var faLabel = document.getElementById("lFA");
+var othLabel = document.getElementById("lOth");
 
 let subcat_count = 0;
 
@@ -39,13 +43,14 @@ let lit = 50;
 let hist = 50;
 let sci = 50;
 let fa = 50;
+let oth = 0;
 
 generate_button.addEventListener('click', () => {
     generate()
 })
 
 
-console.log(checkboxes)
+//console.log(checkboxes)
 
 i=0;
 for (const [key, category] of Object.entries(categories)) {
@@ -86,6 +91,10 @@ faSlider.oninput = function() {
     fa = parseFloat(this.value);
     updatesliders()
 }
+othSlider.oninput = function() {
+    oth = parseFloat(this.value);
+    updatesliders()
+}
 
 generate_button.pressed
 
@@ -119,7 +128,10 @@ function questionsToLimit(counts) {
     // Adjust one of the percentages if necessary
     if (totalCount !== question_count) {
         var difference = question_count - totalCount;
-        console.log(difference, "dif")
+        //console.log(difference, "dif")
+
+        /*const indexToAdjust = difference > 0 ? counts.indexOf(Math.max(...counts)) : counts.indexOf(Math.min(...counts));
+        counts[indexToAdjust] += difference;*/
 
         i = 0;
         j = 0;
@@ -137,8 +149,8 @@ function questionsToLimit(counts) {
             }
             difference = question_count - totalCount;
 
-            console.log(difference/Math.abs(difference), question_count, totalCount, difference)
-            console.log(counts)
+            //console.log(difference/Math.abs(difference), question_count, totalCount, difference)
+            //console.log(counts)
 
             if (j > loop_lim || difference == 0){
                 break;
@@ -151,25 +163,26 @@ function questionsToLimit(counts) {
     return counts;
 }
 function updatesliders() {
-    let total = (lit + hist + sci + fa)+1;
+    let total = (lit + hist + sci + fa + oth)+1;
 
     question_count_label.innerHTML = `Tossup Count - ${question_count}`
 
-    let perc_lit = lit/total; let perc_hist = hist/total; let perc_sci = sci/total; let perc_fa = fa/total;
-    percentages = decimalsToPercentage([perc_lit, perc_hist, perc_sci, perc_fa])
-    perc_lit = percentages[0], perc_hist = percentages[1], perc_sci = percentages[2], perc_fa = percentages[3]
+    let perc_lit = lit/total; let perc_hist = hist/total; let perc_sci = sci/total; let perc_fa = fa/total; let perc_oth = oth/total;
+    percentages = decimalsToPercentage([perc_lit, perc_hist, perc_sci, perc_fa, perc_oth])
+    perc_lit = percentages[0], perc_hist = percentages[1], perc_sci = percentages[2], perc_fa = percentages[3], perc_oth = percentages[4]
 
-    let litq = Math.round(question_count*(lit/total)); let histq = Math.round(question_count*(hist/total)); let sciq = Math.round(question_count*(sci/total)); let faq = Math.round(question_count*(fa/total))
-    question_counts = questionsToLimit([litq,histq,sciq,faq])
-    console.log(question_counts, "TTTTTTTTTTTTTT")
-    lit_count = question_counts[0], hist_count=question_counts[1], sci_count=question_counts[2],fa_count = question_counts[3]
+    let litq = Math.round(question_count*(lit/total)); let histq = Math.round(question_count*(hist/total)); let sciq = Math.round(question_count*(sci/total)); let faq = Math.round(question_count*(fa/total)); let othq = Math.round(question_count*(oth/total))
+    question_counts = questionsToLimit([litq,histq,sciq,faq,othq])
+    //console.log(question_counts, "TTTTTTTTTTTTTT")
+    lit_count = question_counts[0], hist_count=question_counts[1], sci_count=question_counts[2],fa_count = question_counts[3]; oth_count = question_counts[4]
 
-    console.log(perc_lit,perc_hist,perc_sci,perc_fa,perc_lit+perc_hist+perc_sci+perc_fa, "        ", litq, histq, sciq, faq, litq+histq+sciq+faq)
+    //console.log(perc_lit,perc_hist,perc_sci,perc_fa,perc_lit+perc_hist+perc_sci+perc_fa, "        ", litq, histq, sciq, faq, litq+histq+sciq+faq)
 
     litLabel.innerHTML = `Literature - ${perc_lit}% - ${lit_count} Questions`
     histLabel.innerHTML = `History - ${perc_hist}% - ${hist_count} Questions`
     sciLabel.innerHTML = `Science - ${perc_sci}% - ${sci_count} Questions`
     faLabel.innerHTML = `Fine Arts - ${perc_fa}% - ${fa_count} Questions`
+    othLabel.innerHTML = `Other - ${perc_oth}% - ${oth_count} Questions <b>SET TO ZERO, WORK IN PROGRESS</b>`
 }
 
 function addCheckbox(name, i, container, pre_checked = true) {  
@@ -184,7 +197,7 @@ function addCheckbox(name, i, container, pre_checked = true) {
 async function get(url, settings){
     try {
         const response = await fetch(apiUrl);
-        console.log(response)
+        //console.log(response)
         if (!response.ok) {
             throw new Error('Failed to fetch data');
         }
@@ -202,37 +215,36 @@ function addQuestion(data, bdata, i) {
     //console.log(bdata)
     
 
-    $( `<h3 class=\"added_qb\">${data["set"]["name"]} | ${data["category"]} | ${data["subcategory"]} | ${data["difficulty"]}<h3/>`).appendTo($(".results"))
-    $( `<h3 class=\"added_qb\">Tossup #${i+1}<h3/>`).appendTo($(".results"))
-    $( `<p class=\"added_qb\"><b> QUESTION: </b>${data["question"]}<p/>`).appendTo($(".results"))
-    $( `<p class=\"added_qb\"><b> ANSWER: </b>${data["answer"]}<p/>`).appendTo($(".results"))
-    $( "<h3 class=\"added_qb\">Bonuses<h3/>").appendTo($(".results"))
-    $( `<p class=\"added_qb\"><b> LEAD-IN: </b>${bdata["leadin"]}<p/>`).appendTo($(".results"))
-    $( "<h4 class=\"added_qb\">Bonus #1<h4/>").appendTo($(".results"))
-    $( `<p class=\"added_qb\"><b> QUESTION: </b>${bdata["parts"][0]}<p/>`).appendTo($(".results"))
-    $( `<p class=\"added_qb\"><b> ANSWER: </b>${bdata["answers"][0]}<p/>`).appendTo($(".results"))
-    $( "<h4 class=\"added_qb\">Bonus #2<h4/>").appendTo($(".results"))
-    $( `<p class=\"added_qb\"><b> QUESTION: </b>${bdata["parts"][1]}<p/>`).appendTo($(".results"))
-    $( `<p class=\"added_qb\"><b> ANSWER: </b>${bdata["answers"][1]}<p/>`).appendTo($(".results"))
-    $( "<h4 class=\"added_qb\">Bonus #3<h4/>").appendTo($(".results"))
-    $( `<p class=\"added_qb\"><b> QUESTION: </b>${bdata["parts"][2]}<p/>`).appendTo($(".results"))
-    $( `<p class=\"added_qb\"><b> ANSWER: </b>${bdata["answers"][2]}<p/>`).appendTo($(".results"))
-    $( `<p class=\"added_qb\">~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~<p/>`).appendTo($(".results"))
+    $( `<h3 class=\"added_qb\">${data["set"]["name"]} | ${data["category"]} | ${data["subcategory"]} | ${data["difficulty"]}<h3/>`
+    + `<h3 class=\"added_qb\">Tossup #${i+1}</h3>`
+    + `<p class=\"added_qb\"><b> QUESTION: </b>${data["question"]}<p/>`
+    + `<p class=\"added_qb\"><b> ANSWER: </b>${data["answer"]}<p/>`
+    + "<h3 class=\"added_qb\">Bonuses</h3>"
+    + `<p class=\"added_qb\"><b> LEAD-IN: </b>${bdata["leadin"]}<p/>`
+    + "<h4 class=\"added_qb\">Bonus #1</h4>"
+    + `<p class=\"added_qb\"><b> QUESTION: </b>${bdata["parts"][0]}<p/>`
+    + `<p class=\"added_qb\"><b> ANSWER: </b>${bdata["answers"][0]}<p/>`
+    + "<h4 class=\"added_qb\">Bonus #2</h4>"
+    + `<p class=\"added_qb\"><b> QUESTION: </b>${bdata["parts"][1]}<p/>`
+    + `<p class=\"added_qb\"><b> ANSWER: </b>${bdata["answers"][1]}<p/>`
+    + "<h4 class=\"added_qb\">Bonus #3</h4>"
+    + `<p class=\"added_qb\"><b> QUESTION: </b>${bdata["parts"][2]}<p/>`
+    + `<p class=\"added_qb\"><b> ANSWER: </b>${bdata["answers"][2]}<p/>`
+    + `<p class=\"added_qb\">~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~<p/>`).appendTo($(".results_window"))
 }
 
 async function generate() {
 
-    old = document.getElementsByClassName("added_qb")
+    old = document.getElementById("results_window")
+    console.log(old)
+    old.innerHTML = "<h3>Generating your packet...</h3>"
 
-    for (item of old) {
-        item.innerHTML = ""
-    }
 
 
     let selected_difficulties = []
     for (let i = 1; i <= 10; i++) {
         let box = document.getElementById(`c${i+100}`)
-        console.log(box, i)
+        //console.log(box, i)
         if(box.checked === true) {
             selected_difficulties.push(i)
         }
@@ -241,18 +253,18 @@ async function generate() {
     let selected_subcats = []
     for (let i = 1; i <= subcat_count; i++) {
         let box = document.getElementById(`c${i}`)
-        console.log(box, i,'aa')
+        //console.log(box, i,'aa')
         if(box.checked === true) {
             selected_subcats.push(box.value)
         }
     }
-    console.log(selected_subcats)
+    //console.log(selected_subcats)
 
     apiUrl.search = new URLSearchParams({
         randomize: true,
         difficulties: selected_difficulties,
         subcategories: selected_subcats,
-        maxReturnLength: 100
+        maxReturnLength: question_count*7
     });
 
     console.log(apiUrl)
@@ -266,11 +278,11 @@ async function generate() {
     if (data) {
         question_ids = []
         i=0
-        console.log(data["tossups"]["questionArray"])
+        //console.log(data["tossups"]["questionArray"])
         for (question of data["tossups"]["questionArray"]){
             valid = false
             let cate = question["category"]
-            console.log(cate)
+            //console.log(cate)
             if (target_lit > 0) {
                 if (cate == "Literature"){
                     target_lit -= 1
@@ -295,7 +307,7 @@ async function generate() {
                     valid = true
                 }
             } 
-            console.log(target_lit,target_hist,target_sci,target_fa)
+            //console.log(target_lit,target_hist,target_sci,target_fa)
             if (valid) {
                 question_ids.push(i)
             }
@@ -303,7 +315,8 @@ async function generate() {
         }
         j=0
         question_ids.randomize
-        console.log(question_ids.length)
+        //console.log(question_ids.length)
+        old.innerHTML = `<h3>Succesfully found ${question_ids.length} questions:</h3>`
         for (i of question_ids){
             addQuestion(data["tossups"]["questionArray"][i], data["bonuses"]["questionArray"][i], j)
             j++
